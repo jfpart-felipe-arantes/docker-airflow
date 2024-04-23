@@ -22,8 +22,6 @@ ENV LC_MESSAGES en_US.UTF-8
 # Disable noisy "Handling signal" log messages:
 # ENV GUNICORN_CMD_ARGS --log-level WARNING
 
-COPY ./requirements.txt .
-
 RUN set -ex \
     && apt-get update -yqq \
     && apt-get upgrade -yqq \
@@ -71,6 +69,8 @@ RUN set -ex \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow 
+
+COPY ./requirements.txt .
 
 RUN pip install --upgrade pip setuptools wheel \
     && pip install -r requirements.txt \

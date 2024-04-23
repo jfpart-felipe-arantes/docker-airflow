@@ -12,7 +12,7 @@ ocifs
 oracledb
 pandas
 pandas_market_calendars
-pandas==2.2.2
+pandas<2.2
 pendulum
 polars
 psycopg2-binary
