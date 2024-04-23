@@ -1,38 +1,60 @@
-version: '2.1'
+version: '3.8'
+x-env-common:
+    FERNET_KEY: &FERNET_KEY "BRdkQZut1wl5pV20j6-YvnCn0QbAflXhox0Pt0h16kA="
+    SECRET_KEY: &SECRET_KEY "953a83b81aec589dd0fd50193bf6f919197eb00f59415831df4e537d242c"
+    # Postgres Auth
+    POSTGRES_USER: &POSTGRES_USER airflow
+    POSTGRES_PASSWORD: &POSTGRES_PASSWORD airflow
+    POSTGRES_DB: &POSTGRES_DB airflow
+    # Airflow Auth
+    AIRFLOW_USER_NAME: &AIRFLOW_USER_NAME airflow
+    AIRFLOW_USER_EMAIL: &AIRFLOW_USER_EMAIL airflow@example.com
+    AIRFLOW_USER_PASSWORD: &AIRFLOW_USER_PASSWORD airflow
+    # Redis Auth
+    REDIS_PASSWORD: &REDIS_PASSWORD redispass
+    # Airflow deploying
+    EXECUTOR: &EXECUTOR Celery
+    # Custom DAG vars
+    TEST_AIRFLOW_VAR: &TEST_AIRFLOW_VAR Teste123
+x-airflow:
+    airflow-image: &airflow-image ppi_airflow_img_dev:1.0
+    airflow-volumes: &airflow-volumes
+        - ./dags:/usr/local/airflow/dags
+        # Uncomment to include custom plugins
+        # - ./plugins:/usr/local/airflow/plugins
 services:
     redis:
-        image: 'redis:5.0.5'
-        # command: redis-server --requirepass redispass
+        image: redis:7.2.4-alpine
+        restart: always
+        ports:
+            - '6379:6379'
+        command: redis-server --requirepass ${REDIS_PASSWORD}
 
     postgres:
-        image: postgres:9.6
+        image: postgres:16-alpine
+        restart: always
         environment:
-            - POSTGRES_USER=airflow
-            - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow
-        # Uncomment these lines to persist data on the local filesystem.
-        #     - PGDATA=/var/lib/postgresql/data/pgdata
-        # volumes:
-        #     - ./pgdata:/var/lib/postgresql/data/pgdata
+            POSTGRES_USER: *POSTGRES_USER
+            POSTGRES_PASSWORD: *POSTGRES_PASSWORD
+            POSTGRES_DB: *POSTGRES_DB
+            PGDATA: /var/lib/postgresql/data/pgdata
+        volumes:
+            - ./pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
-        image: puckel/docker-airflow:1.10.15
+        image: *airflow-image
         restart: always
         depends_on:
             - postgres
             - redis
         environment:
-            - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
-            # - REDIS_PASSWORD=redispass
-        volumes:
-            - ./dags:/usr/local/airflow/dags
-            # Uncomment to include custom plugins
-            # - ./plugins:/usr/local/airflow/plugins
+            FERNET_KEY: *FERNET_KEY
+            EXECUTOR: *EXECUTOR
+            POSTGRES_USER: *POSTGRES_USER
+            POSTGRES_PASSWORD: *POSTGRES_PASSWORD
+            POSTGRES_DB: *POSTGRES_DB
+            REDIS_PASSWORD: *REDIS_PASSWORD
+        volumes: *airflow-volumes
         ports:
             - "8080:8080"
         command: webserver
@@ -43,50 +65,44 @@ services:
             retries: 3
 
     flower:
-        image: puckel/docker-airflow:1.10.15
+        image: *airflow-image
         restart: always
         depends_on:
             - redis
         environment:
-            - EXECUTOR=Celery
-            # - REDIS_PASSWORD=redispass
+            EXECUTOR: *EXECUTOR
+            REDIS_PASSWORD: *REDIS_PASSWORD
         ports:
             - "5555:5555"
         command: flower
 
     scheduler:
-        image: puckel/docker-airflow:1.10.15
+        image: *airflow-image
         restart: always
         depends_on:
             - webserver
-        volumes:
-            - ./dags:/usr/local/airflow/dags
-            # Uncomment to include custom plugins
-            # - ./plugins:/usr/local/airflow/plugins
+        volumes: *airflow-volumes
         environment:
-            - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
-            # - REDIS_PASSWORD=redispass
+            LOAD_EX: *LOAD_EX
+            FERNET_KEY: *FERNET_KEY
+            EXECUTOR: *EXECUTOR
+            POSTGRES_USER: *POSTGRES_USER
+            POSTGRES_PASSWORD: *POSTGRES_PASSWORD
+            POSTGRES_DB: *POSTGRES_DB
+            REDIS_PASSWORD: *REDIS_PASSWORD
         command: scheduler
 
     worker:
-        image: puckel/docker-airflow:1.10.15
+        image: *airflow-image
         restart: always
         depends_on:
             - scheduler
-        volumes:
-            - ./dags:/usr/local/airflow/dags
-            # Uncomment to include custom plugins
-            # - ./plugins:/usr/local/airflow/plugins
+        volumes: *airflow-volumes
         environment:
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-            # - POSTGRES_USER=airflow
-            # - POSTGRES_PASSWORD=airflow
-            # - POSTGRES_DB=airflow
-            # - REDIS_PASSWORD=redispass
+            FERNET_KEY: *FERNET_KEY
+            EXECUTOR: *EXECUTOR
+            POSTGRES_USER: *POSTGRES_USER
+            POSTGRES_PASSWORD: *POSTGRES_PASSWORD
+            POSTGRES_DB: *POSTGRES_DB
+            REDIS_PASSWORD: *REDIS_PASSWORD
         command: worker
