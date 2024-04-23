@@ -1,19 +1,12 @@
-# VERSION 1.10.15
-# AUTHOR: Matthieu "Puckel_" Roisil
-# UPGRADE BY David Wong & MelleB
-# DESCRIPTION: Basic Airflow container
-# BUILD: docker build --rm -t puckel/docker-airflow .
-# SOURCE: https://github.com/puckel/docker-airflow
-
-FROM python:3.8-slim-buster
-LABEL maintainer="Puckel_"
+FROM python:3.11-slim-buster
+LABEL maintainer="jfpart-felipe-arantes"
 
 # Never prompt the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.10.14
+ARG AIRFLOW_VERSION=2.8.2
 ARG AIRFLOW_USER_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
@@ -50,6 +43,7 @@ RUN set -ex \
         freetds-bin \
         build-essential \
         default-libmysqlclient-dev \
+        pkg-config \
         apt-utils \
         curl \
         rsync \
@@ -84,6 +78,7 @@ RUN if [ "$AIRFLOW_VERSION" = "1.10.15" ]; then pip install apache-airflow-upgra
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
+COPY config/webserver_config.py ${AIRFLOW_USER_HOME}/webserver_config.py
 
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
