@@ -29,6 +29,8 @@ services:
         ports:
             - '6379:6379'
         command: redis-server --requirepass ${REDIS_PASSWORD}
+        environment:
+            REDIS_PASSWORD: *REDIS_PASSWORD
 
     postgres:
         image: postgres:16-alpine
@@ -83,7 +85,6 @@ services:
             - webserver
         volumes: *airflow-volumes
         environment:
-            LOAD_EX: *LOAD_EX
             FERNET_KEY: *FERNET_KEY
             EXECUTOR: *EXECUTOR
             POSTGRES_USER: *POSTGRES_USER
