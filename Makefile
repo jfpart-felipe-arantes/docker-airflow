@@ -2,7 +2,6 @@
 build:
 	docker build -t ppi_airflow_img_dev:1.0 .
 up: celery-up
-
 celery-up:
 	docker compose -f docker-compose-CeleryExecutor.yml up -d
 
