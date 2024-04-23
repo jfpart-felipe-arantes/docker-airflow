@@ -23,12 +23,7 @@ export \
   AIRFLOW__CORE__EXECUTOR \
   AIRFLOW__CORE__FERNET_KEY \
   AIRFLOW__CORE__LOAD_EXAMPLES \
-  AIRFLOW__WEBSERVER__SECRET_KEY \
-
-# Install custom python package if requirements.txt is present
-if [ -e "/requirements.txt" ]; then
-    $(command -v pip) install --user -r /requirements.txt
-fi
+  AIRFLOW__WEBSERVER__SECRET_KEY
 
 wait_for_port() {
   local name="$1" host="$2" port="$3"
@@ -118,14 +113,19 @@ case "$1" in
     fi
     exec airflow webserver
     ;;
-  worker|scheduler)
+  worker)
+    # Give the webserver time to run initdb.
+    sleep 10
+    exec airflow celery "$@"
+    ;;
+  scheduler)
     # Give the webserver time to run initdb.
     sleep 10
     exec airflow "$@"
     ;;
   flower)
     sleep 10
-    exec airflow "$@"
+    exec airflow celery "$@"
     ;;
   version)
     exec airflow "$@"

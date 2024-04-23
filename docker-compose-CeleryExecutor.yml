@@ -28,24 +28,26 @@ services:
         restart: always
         ports:
             - '6379:6379'
-        command: redis-server --requirepass ${REDIS_PASSWORD}
+        command: /bin/sh -c "redis-server --requirepass $$REDIS_PASSWORD"
         environment:
             REDIS_PASSWORD: *REDIS_PASSWORD
 
     postgres:
         image: postgres:16-alpine
         restart: always
+        ports:
+            - '5432:5432'
         environment:
             POSTGRES_USER: *POSTGRES_USER
             POSTGRES_PASSWORD: *POSTGRES_PASSWORD
             POSTGRES_DB: *POSTGRES_DB
-            PGDATA: /var/lib/postgresql/data/pgdata
-        volumes:
-            - ./pgdata:/var/lib/postgresql/data/pgdata
+            # PGDATA: /var/lib/postgresql/data/pgdata
+        # volumes:
+        #     - ./pgdata:/var/lib/postgresql/data/pgdata
 
     webserver:
         image: *airflow-image
-        restart: always
+        # restart: always
         depends_on:
             - postgres
             - redis
