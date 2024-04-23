@@ -1,5 +1,7 @@
+.DEFAULT_GOAL := build
 build:
 	nerdctl build -t ppi_airflow_img_dev:1.0 .
+up: celery-up
 
 celery-up:
 	nerdctl compose -f docker-compose-CeleryExecutor.yml up -d
