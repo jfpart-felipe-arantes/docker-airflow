@@ -20,6 +20,7 @@ x-airflow:
     airflow-image: &airflow-image ppi_airflow_img_dev:1.0
     airflow-volumes: &airflow-volumes
         - ./dags:/usr/local/airflow/dags
+        - ./logs:/usr/local/airflow/logs
         # Uncomment to include custom plugins
         # - ./plugins:/usr/local/airflow/plugins
 services:

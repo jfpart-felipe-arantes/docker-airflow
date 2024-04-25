@@ -93,6 +93,12 @@ RUN chmod +x /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
 COPY config/webserver_config.py ${AIRFLOW_USER_HOME}/webserver_config.py
 
+COPY logs/ logs/
+COPY dags/ dags/
+
+RUN chmod -R 777 dags/
+RUN chmod -R 777 logs/
+
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
 EXPOSE 8080 5555 8793

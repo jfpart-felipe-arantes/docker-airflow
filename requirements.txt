@@ -29,3 +29,6 @@ requests
 slack-sdk
 sonar
 sqlalchemy
+mysql-connector-python
+boto3
+mysql-connector
