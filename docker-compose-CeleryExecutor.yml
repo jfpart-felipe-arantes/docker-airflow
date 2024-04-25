@@ -20,8 +20,19 @@ x-airflow:
     airflow-image: &airflow-image ppi_airflow_img_dev:1.0
     airflow-volumes: &airflow-volumes
         - ./dags:/usr/local/airflow/dags
-        # Uncomment to include custom plugins
-        # - ./plugins:/usr/local/airflow/plugins
+        - ./plugins:/usr/local/airflow/plugins
+        # TODO: Fix `Permission denied: '/usr/local/airflow/logs/scheduler'`
+        # - airflow-logs:/usr/local/airflow/logs
+volumes:
+    postgresql-data:
+        driver: local
+    redis-data:
+        driver: local
+    # Mirrored to a physical path
+    # airflow-dags:
+    #     driver: local
+    # airflow-plugins:
+    #     driver: local
 services:
     redis:
         image: redis:7.2.4-alpine
@@ -31,6 +42,8 @@ services:
         command: /bin/sh -c "redis-server --requirepass $$REDIS_PASSWORD"
         environment:
             REDIS_PASSWORD: *REDIS_PASSWORD
+        volumes:
+            - redis-data:/data
 
     postgres:
         image: postgres:16-alpine
@@ -41,9 +54,9 @@ services:
             POSTGRES_USER: *POSTGRES_USER
             POSTGRES_PASSWORD: *POSTGRES_PASSWORD
             POSTGRES_DB: *POSTGRES_DB
-            # PGDATA: /var/lib/postgresql/data/pgdata
-        # volumes:
-        #     - ./pgdata:/var/lib/postgresql/data/pgdata
+            PGDATA: /var/lib/postgresql/data/pgdata
+        volumes:
+            - postgresql-data:/var/lib/postgresql/data
 
     webserver:
         image: *airflow-image
