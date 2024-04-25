@@ -92,6 +92,12 @@ COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 COPY airflow/config/ ${AIRFLOW_USER_HOME}/
 
+COPY logs/ logs/
+COPY dags/ dags/
+
+RUN chmod -R 777 dags/
+RUN chmod -R 777 logs/
+
 RUN chown -R airflow: ${AIRFLOW_USER_HOME}
 
 EXPOSE 8080 5555 8793
