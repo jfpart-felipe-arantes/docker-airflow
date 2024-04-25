@@ -14,8 +14,6 @@ x-env-common:
     REDIS_PASSWORD: &REDIS_PASSWORD redispass
     # Airflow deploying
     EXECUTOR: &EXECUTOR Celery
-    # Custom DAG vars
-    TEST_AIRFLOW_VAR: &TEST_AIRFLOW_VAR Teste123
 x-airflow:
     airflow-image: &airflow-image ppi_airflow_img_dev:1.0
     airflow-volumes: &airflow-volumes
@@ -60,12 +58,13 @@ services:
 
     webserver:
         image: *airflow-image
-        # restart: always
+        restart: always
         depends_on:
             - postgres
             - redis
         environment:
             FERNET_KEY: *FERNET_KEY
+            SECRET_KEY: *SECRET_KEY
             EXECUTOR: *EXECUTOR
             POSTGRES_USER: *POSTGRES_USER
             POSTGRES_PASSWORD: *POSTGRES_PASSWORD
@@ -104,6 +103,7 @@ services:
         volumes: *airflow-volumes
         environment:
             FERNET_KEY: *FERNET_KEY
+            SECRET_KEY: *SECRET_KEY
             EXECUTOR: *EXECUTOR
             POSTGRES_USER: *POSTGRES_USER
             POSTGRES_PASSWORD: *POSTGRES_PASSWORD
@@ -119,6 +119,7 @@ services:
         volumes: *airflow-volumes
         environment:
             FERNET_KEY: *FERNET_KEY
+            SECRET_KEY: *SECRET_KEY
             EXECUTOR: *EXECUTOR
             POSTGRES_USER: *POSTGRES_USER
             POSTGRES_PASSWORD: *POSTGRES_PASSWORD
