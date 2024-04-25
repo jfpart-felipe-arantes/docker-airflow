@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm
+FROM --platform=linux/amd64 python:3.12-slim-bookworm
 LABEL maintainer="jfpart-felipe-arantes"
 
 # Never prompt the user for choices on installation/configuration of packages
@@ -88,10 +88,9 @@ RUN pip install --upgrade pip setuptools wheel \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY script/entrypoint.sh /entrypoint.sh
+COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-COPY config/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
-COPY config/webserver_config.py ${AIRFLOW_USER_HOME}/webserver_config.py
+COPY airflow/config/ ${AIRFLOW_USER_HOME}/
 
 COPY logs/ logs/
 COPY dags/ dags/

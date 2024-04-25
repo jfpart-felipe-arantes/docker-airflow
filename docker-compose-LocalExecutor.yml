@@ -1,31 +1,70 @@
 version: '3.7'
+x-env-common:
+    FERNET_KEY: &FERNET_KEY "BRdkQZut1wl5pV20j6-YvnCn0QbAflXhox0Pt0h16kA="
+    SECRET_KEY: &SECRET_KEY "953a83b81aec589dd0fd50193bf6f919197eb00f59415831df4e537d242c"
+    # Postgres Auth
+    POSTGRES_USER: &POSTGRES_USER airflow
+    POSTGRES_PASSWORD: &POSTGRES_PASSWORD airflow
+    POSTGRES_DB: &POSTGRES_DB airflow
+    # Airflow Auth
+    AIRFLOW_USER_NAME: &AIRFLOW_USER_NAME airflow
+    AIRFLOW_USER_EMAIL: &AIRFLOW_USER_EMAIL airflow@example.com
+    AIRFLOW_USER_PASSWORD: &AIRFLOW_USER_PASSWORD airflow
+    # Airflow deploying
+    EXECUTOR: &EXECUTOR Local
+x-airflow:
+    airflow-image: &airflow-image ppi_airflow_img_dev:1.0
+    airflow-volumes: &airflow-volumes
+        - ./airflow/dags:/usr/local/airflow/dags
+        - ./airflow/plugins:/usr/local/airflow/plugins
+        # TODO: Fix `Permission denied: '/usr/local/airflow/logs/scheduler'`
+        # - airflow-logs:/usr/local/airflow/logs
+volumes:
+    postgresql-data:
+        driver: local
+    # Mirrored to a physical path
+    # airflow-dags:
+    #     driver: local
+    # airflow-plugins:
+    #     driver: local
 services:
     postgres:
-        image: postgres:9.6
+        image: postgres:16-alpine
+        restart: always
+        ports:
+            - '5432:5432'
         environment:
-            - POSTGRES_USER=airflow
-            - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow
+            POSTGRES_USER: *POSTGRES_USER
+            POSTGRES_PASSWORD: *POSTGRES_PASSWORD
+            POSTGRES_DB: *POSTGRES_DB
+            PGDATA: /var/lib/postgresql/data/pgdata
+        volumes:
+            - postgresql-data:/var/lib/postgresql/data
         logging:
             options:
                 max-size: 10m
                 max-file: "3"
 
     webserver:
-        image: puckel/docker-airflow:1.10.15
+        image: *airflow-image
         restart: always
         depends_on:
             - postgres
         environment:
-            - LOAD_EX=n
-            - EXECUTOR=Local
+            FERNET_KEY: *FERNET_KEY
+            SECRET_KEY: *SECRET_KEY
+            EXECUTOR: *EXECUTOR
+            POSTGRES_USER: *POSTGRES_USER
+            POSTGRES_PASSWORD: *POSTGRES_PASSWORD
+            POSTGRES_DB: *POSTGRES_DB
+            AIRFLOW_USER_NAME: *AIRFLOW_USER_NAME
+            AIRFLOW_USER_EMAIL: *AIRFLOW_USER_EMAIL
+            AIRFLOW_USER_PASSWORD: *AIRFLOW_USER_PASSWORD
         logging:
             options:
                 max-size: 10m
                 max-file: "3"
-        volumes:
-            - ./dags:/usr/local/airflow/dags
-            # - ./plugins:/usr/local/airflow/plugins
+        volumes: *airflow-volumes
         ports:
             - "8080:8080"
         command: webserver
