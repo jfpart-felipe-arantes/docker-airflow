@@ -19,9 +19,8 @@ x-airflow:
     airflow-volumes: &airflow-volumes
         - ./airflow/dags:/usr/local/airflow/dags
         - ./airflow/plugins:/usr/local/airflow/plugins
+        # MacOS user need to set virtiofs as VM mount type
         - ./airflow/logs:/usr/local/airflow/logs
-        # TODO: Fix `Permission denied: '/usr/local/airflow/logs/scheduler'`
-        # - airflow-logs:/usr/local/airflow/logs
 volumes:
     postgresql-data:
         driver: local

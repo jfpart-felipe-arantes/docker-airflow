@@ -88,21 +88,23 @@ RUN pip install --upgrade pip setuptools wheel \
         /usr/share/doc \
         /usr/share/doc-base
 
-COPY scripts/entrypoint.sh /entrypoint.sh
+COPY ./scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-COPY airflow/config/ ${AIRFLOW_USER_HOME}/
 
-COPY logs/ logs/
-COPY dags/ dags/
+WORKDIR ${AIRFLOW_USER_HOME}
+COPY ./airflow/config/ .
 
-RUN chmod -R 777 dags/
-RUN chmod -R 777 logs/
-
-RUN chown -R airflow: ${AIRFLOW_USER_HOME}
+RUN mkdir dags \
+    && mkdir plugins \
+    && mkdir -p logs/scheduler \
+    && mkdir -p logs/dag_processor_manager \
+    && chown -R airflow: . \
+    && chmod -R 777 ./dags/ \
+    && chmod -R 777 ./plugins/ \
+    && chmod -R 777 ./logs/
 
 EXPOSE 8080 5555 8793
 
 USER airflow
-WORKDIR ${AIRFLOW_USER_HOME}
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["webserver"]
