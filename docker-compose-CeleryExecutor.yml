@@ -19,8 +19,8 @@ x-env-common:
 x-airflow:
     airflow-image: &airflow-image ppi_airflow_img_dev:1.0
     airflow-volumes: &airflow-volumes
-        - ./dags:/usr/local/airflow/dags
-        - ./plugins:/usr/local/airflow/plugins
+        - ./airflow/dags:/usr/local/airflow/dags
+        - ./airflow/plugins:/usr/local/airflow/plugins
         # TODO: Fix `Permission denied: '/usr/local/airflow/logs/scheduler'`
         # - airflow-logs:/usr/local/airflow/logs
 volumes:
