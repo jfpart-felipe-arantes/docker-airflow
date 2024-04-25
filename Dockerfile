@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm
+FROM --platform=linux/amd64 python:3.12-slim-bookworm
 LABEL maintainer="jfpart-felipe-arantes"
 
 # Never prompt the user for choices on installation/configuration of packages
